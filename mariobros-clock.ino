@@ -1,7 +1,9 @@
 // #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "ESP32-VirtualMatrixPanel-I2S-DMA.h"
+#include <Ticker.h>
 #include "Clockface.h"
 #include "DateTime.h"
+#include "TetrisMatrixDraw.h"
 
 // #include "WiFiConnect.h"
 #include "WiFi.h"
@@ -41,6 +43,13 @@ MatrixPanel_I2S_DMA *dma_display_orig = nullptr;
 VirtualMatrixPanel  *dma_display = nullptr;
 
 // WiFiConnect wifi;
+byte uhrzeit[6] = {1, 2, 3, 0, 0, 0};
+
+  int16_t old_min  = -1;
+  bool old_displaycolon=false;
+  bool tetris_still_running=false;
+  int16_t currentGame = 1, oldGameSelector = -1;
+  
 WiFiMulti wifiMulti;
 DateTime dateTime;
 Clockface *clockface;
@@ -49,6 +58,9 @@ const char* wifihostname = "Clockface";
 uint16_t myBLACK = dma_display->color565(0, 0, 0);
 uint16_t myWHITE = dma_display->color565(255, 255, 255);
 uint16_t myBLUE = dma_display->color565(0, 0, 255);
+
+TetrisMatrixDraw * tetris;
+//TetrisMatrixDraw tetris(*dma_display);
 
 void displaySetup() {
   HUB75_I2S_CFG::i2s_pins _pins={R1_PIN, G1_PIN, B1_PIN, R2_PIN, G2_PIN, B2_PIN, A_PIN, B_PIN, C_PIN, D_PIN, E_PIN, LAT_PIN, OE_PIN, CLK_PIN};
@@ -115,30 +127,89 @@ Serial.println("Connecting Wifi");
 void setup() {
 
   Serial.begin(115200);
- // EEPROM.begin(EEPROM_SIZE);
+
 
   displaySetup();
 
-  clockface = new Clockface(dma_display);
+  tetris = new TetrisMatrixDraw(*dma_display);
 
-/*
-  dma_display->setTextSize(1);
-  dma_display->setTextColor(myWHITE);
-  dma_display->setCursor(5, 0);
-  dma_display->println("CLOCKWISE");
-  dma_display->setTextColor(myBLUE);
-  dma_display->setCursor(0, 32);
-  dma_display->print("connecting...");
-  */
+  clockface = new Clockface(dma_display);
   
   ConnectWifi();
  
   dateTime.begin();
 
-
-  clockface->setup(&dateTime);
+  GameSelect() ;
+  //clockface->setup(&dateTime);
+  //InitTetris();
 }
 
 void loop() {
-  clockface->update();
+  dateTime.update();
+  GameSelect();
+       
+  switch (currentGame) {
+      case 1: clockface->update(); break;
+      case 2: PlayTetris(); break;
+      default: break;
+     }
+  
+  //clockface->update();
+  //PlayTetris();
+
+  delay(100);
+}
+
+void GameSelect() {
+  if( oldGameSelector != (uhrzeit[2] % 2)) {
+      oldGameSelector = (uhrzeit[2] % 2);
+      if (++currentGame > 2)
+        currentGame = 1;
+
+     switch (currentGame) {
+      case 1: clockface->setup(&dateTime); break;
+      case 2: InitTetris(); break;
+      default: break;
+     }
+  }
+}
+
+void InitTetris() {
+  // https://githubhot.com/repo/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA/issues/118?page=1
+  // matrix->flipDMABuffer();
+  dma_display->clearScreen();
+    tetris->scale = 2;
+  char timeString [8];
+  sprintf(timeString, "%d%d:%d%d", uhrzeit[0], uhrzeit[1], uhrzeit[2], uhrzeit[3]);
+  tetris->setTime(timeString, true);
+
+  old_min = dateTime.getMinute();
+  bool displaycolon = false;
+// tetris->drawNumbers(x_pos,y_pos, drawColon, color);
+  while(!(tetris->drawNumbers(2,52, displaycolon))) {
+    delay(100);
+    yield();
+    dateTime.update();
+
+    displaycolon = ((uhrzeit[5] % 2) == 1);
+    //dma_display->clearScreen();
+    dma_display->fillScreen(0);
+  }
+}
+
+void PlayTetris() {
+  if (old_min != dateTime.getMinute()) {
+    old_min = dateTime.getMinute();
+    char timeString [8];
+    sprintf(timeString, "%d%d:%d%d", uhrzeit[0], uhrzeit[1], uhrzeit[2], uhrzeit[3]);
+    tetris->setTime(timeString, true);
+  }
+  
+  bool displaycolon = ((uhrzeit[5] % 2) == 1);
+  //dma_display->clearScreen();
+  if ((displaycolon != old_displaycolon) || (!tetris_still_running)) {
+    dma_display->fillScreen(0);
+    tetris_still_running = tetris->drawNumbers(2,52, displaycolon);
+    old_displaycolon = displaycolon;
+  }
 }

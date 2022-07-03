@@ -5,6 +5,8 @@
 #include <TimeLib.h>
 #include <WiFi.h>
 
+extern byte uhrzeit[];
+
 class DateTime
 {
   private:    
@@ -12,8 +14,6 @@ class DateTime
     NTPClient* ntp;
 
   public:
-
-  byte uhrzeit[6] = {1, 2, 3, 0, 0, 0};
   int16_t last_hour = -1;
   int16_t last_min  = -1;
   int16_t last_sec  = -1;

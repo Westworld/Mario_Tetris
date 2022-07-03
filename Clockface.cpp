@@ -55,7 +55,7 @@ void Clockface::update() {
   minuteBlock.update();
   mario.update();
 
-  _dateTime->update();
+  //_dateTime->update();  // in loop
 
   if (_dateTime->getSecond() == 0 && millis() - lastMillis > 1000) {
     mario.jump();

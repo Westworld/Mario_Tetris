@@ -5,7 +5,7 @@ https://github.com/jnthas/mariobros-clock/b
 
 and
 
-xxx.
+https://github.com/toblum/TetrisAnimation
 
 
 
@@ -16,7 +16,11 @@ xxx.
 - overwrote standard pins to allow different, much more easy, routing from ESP32 to HUB75.
 
 ## Modification for Tetris
-WIP
+
+- just using library
+
+# Game
+Clock starts switches every 10 minutes between Tetris and Mario Bors.
 
 
 ## PCB 
