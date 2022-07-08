@@ -1,6 +1,7 @@
 
 #include "Clockface.h"
 
+
 EventBus eventBus;
 
 const char* FORMAT_TWO_DIGITS = "%02d";
@@ -15,8 +16,9 @@ Object hill(HILL, 20, 22);
 
 
 Mario mario(23, 40);
-Block hourBlock(13, 8);
-Block minuteBlock(32, 8);
+
+mario_Block hourBlock(13, 8);
+mario_Block minuteBlock(32, 8);
 
 
 unsigned long lastMillis = 0;

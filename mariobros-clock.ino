@@ -4,6 +4,10 @@
 #include "Clockface.h"
 #include "DateTime.h"
 #include "TetrisMatrixDraw.h"
+#include "ball.h"
+#include "paddle.h"
+#include "blocks.h"
+#include "shot.h"
 
 // #include "WiFiConnect.h"
 #include "WiFi.h"
@@ -54,6 +58,13 @@ WiFiMulti wifiMulti;
 DateTime dateTime;
 Clockface *clockface;
 const char* wifihostname = "Clockface";
+
+Ball * ball;
+Paddle * paddle;
+Blocks * blocks;
+Shot * shotup;
+Shot * shotdown;
+int16_t curBlock;
 
 uint16_t myBLACK = dma_display->color565(0, 0, 0);
 uint16_t myWHITE = dma_display->color565(255, 255, 255);
@@ -136,12 +147,33 @@ void setup() {
   clockface = new Clockface(dma_display);
   
   ConnectWifi();
+
+  Serial.println("Start");
+
+   ball = new Ball(dma_display);
+   paddle = new Paddle(dma_display);
+   blocks = new Blocks(dma_display);
+   
+   shotup = new Shot(dma_display, 1);
+   shotdown = new Shot(dma_display, -1);
  
   dateTime.begin();
-
-  GameSelect() ;
+  //GameSelect() ;
   //clockface->setup(&dateTime);
   //InitTetris();
+
+/*
+  InitArkonid();
+
+  delay(5000);
+
+  Serial.println("Endinit");
+  for (int i=0;i<1000;i++)
+  {
+    PlayArkonid();
+    delay(100);
+  }
+  */
 }
 
 void loop() {
@@ -151,6 +183,7 @@ void loop() {
   switch (currentGame) {
       case 1: clockface->update(); break;
       case 2: PlayTetris(); break;
+      case 3: PlayArkonid(); break;
       default: break;
      }
   
@@ -163,12 +196,13 @@ void loop() {
 void GameSelect() {
   if( oldGameSelector != (uhrzeit[2] % 2)) {
       oldGameSelector = (uhrzeit[2] % 2);
-      if (++currentGame > 2)
+      if (++currentGame > 3)
         currentGame = 1;
 
      switch (currentGame) {
       case 1: clockface->setup(&dateTime); break;
       case 2: InitTetris(); break;
+      case 3: InitArkonid(); break;
       default: break;
      }
   }
@@ -212,4 +246,23 @@ void PlayTetris() {
     tetris_still_running = tetris->drawNumbers(2,52, displaycolon);
     old_displaycolon = displaycolon;
   }
+}
+
+void InitArkonid() {
+    dma_display->fillScreen(ILI9486_BLACK);
+    blocks->setColor(tetrisBLUE);
+    paddle->setType(true);
+    paddle->draw();
+    ball->SetY(62);
+    ball->draw();
+    blocks->Setup(uhrzeit);
+    blocks->draw();
+}
+
+void PlayArkonid() {
+  curBlock = ball->move_draw();  
+  blocks->checkBall(ball);
+   
+  paddle->update(ball->GetX());
+  blocks->draw(ball);
 }

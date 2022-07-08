@@ -14,7 +14,7 @@
 
 #include "assets.h"
 #include "mario.h"
-#include "block.h"
+#include "mario_block.h"
 
 class Clockface: public IClockface {
   private:
