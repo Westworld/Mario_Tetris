@@ -78,7 +78,7 @@ void displaySetup() {
   HUB75_I2S_CFG mxconfig(
                 PANEL_RES_X,   // module width
                 PANEL_RES_Y,   // module height
-                PANEL_CHAIN,    // chain length
+                PANEL_CHAIN,   //    // chain length
                 _pins // pin mapping
   );
 
@@ -87,9 +87,10 @@ void displaySetup() {
 
   // Display Setup
   dma_display_orig = new MatrixPanel_I2S_DMA(mxconfig);
-  dma_display_orig->setBrightness8(64);
   dma_display_orig->begin();
-
+ dma_display_orig->setBrightness8(64);
+    dma_display_orig->clearScreen();
+ 
   // create VirtualDisplay object based on our newly created dma_display object
   dma_display = new VirtualMatrixPanel((*dma_display_orig), NUM_ROWS, NUM_COLS, PANEL_RES_X, PANEL_RES_Y, SERPENT, TOPDOWN);
 
@@ -260,9 +261,16 @@ void InitArkonid() {
 }
 
 void PlayArkonid() {
-  curBlock = ball->move_draw();  
-  blocks->checkBall(ball);
-   
-  paddle->update(ball->GetX());
-  blocks->draw(ball);
+  dateTime.update();
+  if (old_min != dateTime.getMinute()) {
+    old_min = dateTime.getMinute();
+    InitArkonid();
+  }
+  else {    
+    curBlock = ball->move_draw();  
+    blocks->checkBall(ball);
+     
+    paddle->update(ball->GetX());
+    blocks->draw(ball);
+  }
 }

@@ -1,5 +1,10 @@
 # Mix of Mario Bros. and Tetris Clock
 
+
+Using 64x64 DMD matrix as clock to run
+Marios Bros, Tetris and Blockout
+
+
 This is a clone based on:
 https://github.com/jnthas/mariobros-clock/b
 
@@ -16,11 +21,11 @@ https://github.com/toblum/TetrisAnimation
 - overwrote standard pins to allow different, much more easy, routing from ESP32 to HUB75.
 
 ## Modification for Tetris
-
 - just using library
 
+
 # Game
-Clock starts switches every 10 minutes between Tetris and Mario Bors.
+Clock starts switches every 10 minutes between Tetris and Mario Bors. and Blockout
 
 
 ## PCB 
